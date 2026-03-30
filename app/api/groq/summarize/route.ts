@@ -55,6 +55,10 @@ export async function POST(req: Request) {
           "timestamp": "0:00 (Mandatory if format='video')"
         }
       ],
+      "youtube_recommendations": [
+        { "title": "Specific Video Title", "search_query": "The exact query to find this on YouTube" },
+        { "title": "Alternative Perspective Title", "search_query": "YouTube search query 2" }
+      ],
       "mind_map_prompt": "Mandatory if format='image' (Central hierarchical mind map description)",
       "presentation_outline": "Mandatory if format='ppt' (Slide-by-slide deck outline)",
       "quiz": [

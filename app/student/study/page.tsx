@@ -49,6 +49,7 @@ interface KeyTerm {
 
 interface StudyData {
   summary: SummaryItem[];
+  youtube_recommendations?: { title: string; search_query: string }[];
   quiz: QuizQuestion[];
   keyTerms: KeyTerm[];
   studyStrategy: string;
