@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LuCalendar, LuPlus, LuClock, LuBookOpen, LuCircleCheck, LuCircleAlert, LuTrash2, LuPhone } from 'react-icons/lu';
+import { LuCalendar, LuPlus, LuClock, LuBookOpen, LuCircleCheck, LuCircleAlert, LuTrash2, LuPhone, LuSparkles } from 'react-icons/lu';
 import { db, auth } from '@/lib/firebase';
 import { 
   collection, 
@@ -28,6 +28,8 @@ export default function StudySchedulePage() {
   const [tasks, setTasks] = useState<ScheduleTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ task: '', subject: 'Computer Science', priority: 'medium' as const, time: '09:00 AM' });
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   // Real-time Firestore Sync
   useEffect(() => {
@@ -50,6 +52,55 @@ export default function StudySchedulePage() {
 
     return () => unsubscribe();
   }, []);
+
+  const generateAISchedule = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    setAiGenerating(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('studyos_user') || '{}');
+      if (!user.uid) {
+        alert("User not found!");
+        return;
+      }
+
+      const response = await fetch('/api/groq/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirements: aiPrompt })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        alert(`API Error: ${data.error || 'Server error'}`);
+        return;
+      }
+
+      if (data.tasks && Array.isArray(data.tasks)) {
+        for (const task of data.tasks) {
+          await addDoc(collection(db, "tasks"), {
+            task: task.task,
+            subject: task.subject,
+            priority: task.priority,
+            time: task.time,
+            userId: user.uid,
+            completed: false,
+            createdAt: serverTimestamp()
+          });
+        }
+        setAiPrompt('');
+        alert("AI Schedule Generated and added successfully!");
+      } else {
+        alert("Failed to parse AI output.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error generating schedule.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
 
   const addTask = async () => {
     const user = JSON.parse(localStorage.getItem('studyos_user') || '{}');
@@ -124,6 +175,38 @@ export default function StudySchedulePage() {
       </div>
 
       <div className="ribbon-student" />
+
+      {/* AI Schedule Generator */}
+      <div className="glass-card p-6 border-student-accent/30 bg-gradient-to-r from-student-accent/10 to-transparent">
+        <h2 className="text-2xl font-black tracking-tight mb-2 flex items-center gap-2">
+          <LuSparkles className="text-student-accent" />
+          AI Course Planner
+        </h2>
+        <p className="text-sm text-os-muted mb-4 font-bold">Describe your availability and what you want to study. We'll generate a balanced schedule mixing notes, quizzes, mock tests, and battle mode.</p>
+        <div className="flex flex-col md:flex-row gap-4">
+          <textarea 
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            disabled={aiGenerating}
+            placeholder="E.g., I have 3 hours today. I want to revise Data Structures, do 1 mock test, and play 1 battle..."
+            className="flex-1 bg-black/40 border border-os-border focus:border-student-accent rounded-xl p-4 text-white outline-none min-h-[100px] resize-none"
+          />
+          <button 
+            onClick={generateAISchedule}
+            disabled={aiGenerating}
+            className="flex items-center justify-center gap-2 px-8 py-4 bg-student-accent hover:bg-red-700 disabled:opacity-50 disabled:bg-gray-600 text-white rounded-xl font-black transition-all hover:scale-105"
+          >
+            {aiGenerating ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <LuSparkles size={20} />
+                <span>GENERATE</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Calendar View (Mock) */}

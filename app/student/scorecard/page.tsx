@@ -30,29 +30,26 @@ interface AcademicScoring {
   mathematics: number;
   logic: number;
   coding: number;
+  theory: number;
+  practical: number;
+  analytical: number;
 }
 
 interface MockData {
   totalPercentage: number;
   cgpa: string;
-  placementScore: number;
-  placementReadiness: Record<string, boolean>;
   subjects: Subject[];
   studyPlan: { day: string; subject: string; focus: string }[];
+  strengths?: string[];
+  weaknesses?: string[];
   academicScoring?: AcademicScoring;
 }
 
 const mockScorecard: MockData = {
   totalPercentage: 84.5,
   cgpa: "8.45/10",
-  placementScore: 92,
-  placementReadiness: {
-    "Google": true,
-    "Microsoft": true,
-    "TCS": true,
-    "Infosys": true,
-    "Zomato": false
-  },
+  strengths: ["Algorithms", "Data Structures"],
+  weaknesses: ["Operating Systems"],
   subjects: [
     { name: "Data Structures", grade: "A", percentage: 92 },
     { name: "Algorithms", grade: "A+", percentage: 95 },
@@ -68,7 +65,10 @@ const mockScorecard: MockData = {
   academicScoring: {
     mathematics: 85,
     logic: 90,
-    coding: 70
+    coding: 70,
+    theory: 80,
+    practical: 88,
+    analytical: 85
   }
 };
 
@@ -128,7 +128,7 @@ export default function ScorecardPage() {
       
       // Handle Gemini fallback missing structure
       if (!parsedData.academicScoring) {
-        parsedData.academicScoring = { mathematics: 75, logic: 70, coding: 80 };
+        parsedData.academicScoring = { mathematics: 75, logic: 70, coding: 80, theory: 70, practical: 80, analytical: 75 };
       }
       
       setData(parsedData);
@@ -150,7 +150,7 @@ export default function ScorecardPage() {
     stroke: { width: 2 },
     markers: { size: 4, colors: ['#ef4444'], strokeColors: '#ef4444', strokeWidth: 1 },
     xaxis: { 
-      categories: ['Mathematics', 'Logic', 'Coding'],
+      categories: ['Mathematics', 'Logic', 'Coding', 'Theory', 'Practical', 'Analytical'],
       labels: { style: { colors: '#fff', fontSize: '12px', fontWeight: 600 } }
     },
     yaxis: { show: false, min: 0, max: 100 },
@@ -162,7 +162,7 @@ export default function ScorecardPage() {
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-4xl font-black tracking-tighter mb-2">Scorecard Analyzer</h2>
-          <p className="text-os-muted text-sm uppercase tracking-widest font-bold">Upload Marksheet. Get Career Roadmap.</p>
+          <p className="text-os-muted text-sm uppercase tracking-widest font-bold">Upload Marksheet. This academic profile securely powers the AI Summarizer, personalizing analogies and quiz difficulties.</p>
         </div>
         {!data && !isAnalyzing && (
           <button
@@ -205,38 +205,12 @@ export default function ScorecardPage() {
 
       {data && !isAnalyzing && (
         <div className="space-y-10 animate-fade-up">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 group">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-os-muted mb-4 font-black">Overall CGPA</p>
-              <div className="text-6xl font-black text-white group-hover:scale-105 transition-transform">{data.cgpa || '8.2'}</div>
-              <div className="mt-6 progress-bar h-2">
-                <div className="progress-fill-red" style={{ width: `${data.totalPercentage || 80}%` }} />
-              </div>
-            </div>
-
-            <div className="glass-card p-8 group bg-gradient-to-br from-student-accent/5 to-transparent border-student-accent/20">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-student-accent mb-4 font-black">Placement Score</p>
-              <div className="text-6xl font-black text-student-accent glow-text-red group-hover:scale-105 transition-transform">
-                {data.placementScore || 85}
-              </div>
-              <p className="text-[10px] mt-4 text-os-muted uppercase tracking-widest font-bold">Top 2% of candidates</p>
-            </div>
-
-            <div className="glass-card p-8 overflow-hidden">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-os-muted mb-6 font-black">Company Readiness</p>
-              <div className="space-y-3">
-                {data.placementReadiness && Object.entries(data.placementReadiness).map(([company, qualified], i) => (
-                  <div key={i} className="flex justify-between items-center group">
-                    <span className="text-sm font-bold text-os-muted group-hover:text-white transition-colors">{company}</span>
-                    {qualified ? (
-                      <span className="flex items-center gap-1.5 text-green-500 text-[10px] font-black uppercase tracking-widest">
-                        <LuCircleCheck size={12} /> Qualified
-                      </span>
-                    ) : (
-                      <span className="text-os-muted/30 text-[10px] font-black uppercase tracking-widest line-through">Incomplete</span>
-                    )}
-                  </div>
-                ))}
+<div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+              <div className="glass-card p-8 group">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-os-muted mb-4 font-black">Overall CGPA</p>
+                <div className="text-6xl font-black text-white group-hover:scale-105 transition-transform">{data.cgpa || '8.2'}</div>
+                <div className="mt-6 progress-bar h-2">
+                  <div className="progress-fill-red" style={{ width: `${data.totalPercentage || 80}%` }} />
               </div>
             </div>
           </div>
@@ -260,24 +234,27 @@ export default function ScorecardPage() {
                 <div className="flex justify-center -mt-6">
                   <Chart
                     options={radarChartOptions}
-                    series={[{ name: 'Score', data: [data.academicScoring.mathematics, data.academicScoring.logic, data.academicScoring.coding] }]}
+                    series={[{ name: 'Score', data: [data.academicScoring.mathematics, data.academicScoring.logic, data.academicScoring.coding, data.academicScoring.theory, data.academicScoring.practical, data.academicScoring.analytical] }]}
                     type="radar"
                     height={320}
                   />
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {[
                     { label: 'Mathematics', score: data.academicScoring.mathematics },
                     { label: 'Logic & Reasoning', score: data.academicScoring.logic },
-                    { label: 'Coding & DS', score: data.academicScoring.coding }
+                    { label: 'Coding & DS', score: data.academicScoring.coding },
+                    { label: 'Theoretical Grasp', score: data.academicScoring.theory },
+                    { label: 'Practical App', score: data.academicScoring.practical },
+                    { label: 'Analytical Thinking', score: data.academicScoring.analytical }
                   ].map((skill, idx) => (
-                    <div key={idx} className="space-y-2">
-                       <div className="flex justify-between items-center">
-                        <div className="font-bold text-sm">{skill.label}</div>
+                    <div key={idx} className="space-y-1">
+                       <div className="flex justify-between items-center text-xs">
+                        <div className="font-bold">{skill.label}</div>
                         <div className="font-black text-student-accent">{skill.score}/100</div>
                        </div>
-                       <div className="progress-bar w-full h-2">
+                       <div className="progress-bar w-full h-1">
                         <div className="bg-student-accent" style={{ width: `${skill.score}%`, height: '100%' }} />
                        </div>
                     </div>

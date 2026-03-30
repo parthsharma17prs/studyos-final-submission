@@ -29,19 +29,13 @@ Return a JSON object with this EXACT structure:
   "cgpa": 8.2,
   "sgpa": 7.8,
   "totalPercentage": 76.5,
-  "placementScore": 72,
-  "placementReadiness": {
-    "tcs": true,
-    "infosys": true,
-    "wipro": true,
-    "amazon": false,
-    "google": false,
-    "flipkart": false
-  },
   "academicScoring": {
     "mathematics": 85,
     "logic": 90,
-    "coding": 70
+    "coding": 70,
+    "theory": 80,
+    "practical": 75,
+    "analytical": 88
   },
   "studyPlan": [
     { "day": "Day 1-5", "subject": "weakest subject", "focus": "description" },
@@ -56,9 +50,7 @@ Rules:
 - Extract EVERY subject visible in the marksheet
 - Calculate percentage for each subject
 - CGPA: if shown, use it. If not, calculate from grades
-- Placement Score: weighted (CS subjects get 1.5x weight)
-- academicScoring: Infer a score from 0 to 100 for three primary categories (mathematics, logic, coding) based on marks in relevant subjects.
-- Placement cutoffs: TCS 6.0+, Infosys 6.5+, Wipro 6.0+, Amazon 7.5+, Google 8.0+
+- academicScoring: Infer a score from 0 to 100 for six primary categories (mathematics, logic, coding, theory, practical, analytical) based on marks in relevant subjects.
 - Study plan: 30-day plan focusing on weakest subjects first
 - If you can't read a value, use null`;
 
