@@ -885,3 +885,12 @@ API Error: Error: Failed to parse AI response as JSON
  ✓ Compiled in 537ms (321 modules)
  ✓ Compiled in 1944ms (799 modules)
  ✓ Compiled in 4.5s (829 modules)
+ GET /student/scorecard 200 in 296ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1411ms (832 modules)
+ GET /_next/static/chunks/webpack.js?v=1774898698329 404 in 1713ms
+ GET /_next/static/css/app/layout.css?v=1774898698329 404 in 1754ms
+ GET /_next/static/chunks/app/student/scorecard/page.js 404 in 1712ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 1716ms
+ GET /_next/static/chunks/main-app.js?v=1774898698329 404 in 1721ms
+ GET /_next/static/chunks/app/student/layout.js 404 in 1708ms

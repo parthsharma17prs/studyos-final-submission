@@ -95,35 +95,47 @@ export default function ScorecardPage() {
     setError('');
     
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result?.toString().split(',')[1];
-        if (!base64String) throw new Error('File conversion failed');
-
-        const res = await fetch('/api/analyze-scorecard', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileBase64: base64String,
-            mimeType: file.type
-          })
+      const getBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const result = reader.result?.toString().split(',')[1];
+            if (result) resolve(result);
+            else reject(new Error('File conversion failed'));
+          };
+          reader.onerror = (error) => reject(error);
         });
-
-        if (!res.ok) throw new Error('Failed to analyze scorecard');
-        
-        const parsedData = await res.json();
-        
-        // Handle Gemini fallback missing structure
-        if (!parsedData.academicScoring) {
-          parsedData.academicScoring = { mathematics: 75, logic: 70, coding: 80 };
-        }
-        
-        setData(parsedData);
-        // Save to localStorage so summary generation can use it for personalization
-        localStorage.setItem('studyos_scorecard_data', JSON.stringify(parsedData));
       };
-      reader.readAsDataURL(file);
+
+      const base64String = await getBase64(file);
+
+      const res = await fetch('/api/analyze-scorecard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileBase64: base64String,
+          mimeType: file.type
+        })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error('Failed to analyze scorecard: ' + errText);
+      }
+      
+      const parsedData = await res.json();
+      
+      // Handle Gemini fallback missing structure
+      if (!parsedData.academicScoring) {
+        parsedData.academicScoring = { mathematics: 75, logic: 70, coding: 80 };
+      }
+      
+      setData(parsedData);
+      // Save to localStorage so summary generation can use it for personalization
+      localStorage.setItem('studyos_scorecard_data', JSON.stringify(parsedData));
     } catch (err: any) {
+      console.error(err);
       setError(err.message || 'Error parsing document.');
     } finally {
       setIsAnalyzing(false);
