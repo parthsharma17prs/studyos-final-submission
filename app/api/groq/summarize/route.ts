@@ -5,9 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    console.log("Receiving summarize request");
     const formData = await req.formData();
-    console.log("Parsed form data");
     const content = formData.get('content') as string || '';
     const difficulty = formData.get('difficulty') as string || 'medium';
     const language = formData.get('language') as string || 'English';
@@ -16,31 +14,53 @@ export async function POST(req: Request) {
     const file = formData.get('file') as File | null;
     
     if (!content.trim() && !file) {
-      console.log("No content");
       return NextResponse.json({ error: 'Content or file is required' }, { status: 400 });
     }
 
+    const formatPrompt = `FORMAT SELECTION: The user selected "${format}".
+    
+    INSTRUCTIONS FOR SELECTED FORMAT:
+    - If "image": 
+        * The "summary" array should be conceptual. Each item must have a detailed "visual_prompt" (specifically for charts, flowcharts, graphs, or mind map branches).
+        * Populate "mind_map_prompt" with a root-level complex hierarchical mind map prompt.
+        * Focus content on SPATIAL relationships and visual data representation.
+    - If "video": 
+        * The "description" in each "summary" item MUST be written as a "SCENE SCRIPT".
+        * Format: [VISUAL] (describe the animation/footage), [AUDIO] (the voiceover script with timestamps).
+        * Include scene transitions and background music suggestions.
+    - If "ppt": 
+        * Populate "presentation_outline" with a structured 5-7 slide deck outline.
+        * Each slide needs: [TITLE], [BULLET POINTS], [IMAGE PROMPT].
+        * Optimize for Gamma AI/PowerPoint structure.
+    - If "text": 
+        * Focus on high-density academic notes, deep analysis, and bulleted lists.
+        * Use specialized "ELI5" and "real_world_use" for complexity.`;
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       }
     });
 
-    const promptText = `You are an elite cognitive learning assistant, matching the "study_notes_intelligence_suite" and "adaptive_learning_roadmap" framework. 
-    Analyze the provided notes and return ONE massive structured JSON object.
+    const promptText = `You are a world-class cognitive study architect. Your goal is to transform the provided content into a specialized learning framework based on the user's chosen format.
 
     JSON SCHEMA (STRICT):
     {
       "summary": [
         {
           "heading": "Concept name",
-          "description": "Highly detailed multi-sentence explanation of the concept"
+          "description": "Content based on format (notes vs script vs visual logic)",
+          "visual_prompt": "Mandatory if format='image' (describe a specific chart/graph/infographic)",
+          "timestamp": "0:00 (Mandatory if format='video')"
         }
       ],
       "youtube_recommendations": [
-        { "title": "Specific Video Title", "search_query": "Exact query to search on YouTube" }
+        { "title": "Specific Video Title", "search_query": "The exact query to find this on YouTube" },
+        { "title": "Alternative Perspective Title", "search_query": "YouTube search query 2" }
       ],
+      "mind_map_prompt": "Mandatory if format='image' (Central hierarchical mind map description)",
+      "presentation_outline": "Mandatory if format='ppt' (Slide-by-slide deck outline)",
       "quiz": [
         {
           "question": "The question",
@@ -65,9 +85,11 @@ export async function POST(req: Request) {
     }
 
     Rules:
-    1. LANGUAGE: ${language}.
-    2. DIFFICULTY: ${difficulty}.
-    3. QUESTION COUNT: ${questionCount}.
+    1. ${formatPrompt}
+    2. LANGUAGE: ${language}.
+    3. DIFFICULTY: ${difficulty}.
+    4. QUESTION COUNT: ${questionCount}.
+    5. Be extremely thorough in the "description" for the selected format.
 
     CONTENT TO ANALYZE:
     ${content}`;
@@ -85,9 +107,7 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Generating with Gemini...");
     const result = await model.generateContent(parts);
-    console.log("Generated.");
     const outputText = result.response.text();
     
     let studyData;
