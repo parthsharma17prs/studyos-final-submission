@@ -119,6 +119,40 @@ const sampleStudyData: StudyData = {
   confabulationFlags: []
 };
 
+// --- Injected by AI ---
+const StaggeredImage = ({ prompt, width, height, className, index = 0 }: { prompt: string, width: number, height: number, className?: string, index?: number }) => {
+  const [src, setSrc] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const cleanPrompt = encodeURIComponent(prompt.substring(0, 400));
+      setSrc(`https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 1000)}`);
+    }, index * 4000);
+
+    return () => clearTimeout(timer);
+  }, [prompt, index, width, height]);
+
+  if (error) {
+    return <div className={`flex items-center justify-center bg-purple-900/20 text-purple-400 text-xs text-center border border-purple-500/20 ${className}`}>Image Failed<br/>(Rate Limited)</div>;
+  }
+
+  if (!src) {
+    return <div className={`flex items-center justify-center bg-purple-900/10 text-purple-500/50 text-xs animate-pulse border border-purple-500/10 ${className}`}>Queueing...</div>;
+  }
+
+  return (
+    <img 
+      src={src} 
+      alt="Generated Mind Map Content" 
+      className={className} 
+      loading="lazy"
+      onError={() => setError(true)}
+    />
+  );
+};
+// ----------------------
+
 export default function StudyPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('input');
   const [inputText, setInputText] = useState('');
@@ -633,10 +667,11 @@ export default function StudyPage() {
                    <p className="text-sm text-os-muted mb-4">Generated Mind Map Image:</p>
                    {transformedContent.mind_map_prompt && (
                      <div className="w-full flex justify-center mb-6">
-                       <img 
-                         src={`https://image.pollinations.ai/prompt/${encodeURIComponent(transformedContent.mind_map_prompt)}?width=800&height=400&nologo=true`} 
-                         alt="Mind Map" 
-                         className="rounded-xl border border-purple-500/30 max-w-full"
+                       <StaggeredImage 
+                         prompt={transformedContent.mind_map_prompt}
+                         width={800} height={400}
+                         className="rounded-xl border border-purple-500/30 max-w-full min-h-[400px]"
+                         index={0}
                        />
                      </div>
                    )}
@@ -653,10 +688,11 @@ export default function StudyPage() {
                            <div className="flex-1">
                              <p className="text-xs text-purple-300"><strong>Visual Prompt:</strong> {item.visual_prompt}</p>
                            </div>
-                           <img 
-                             src={`https://image.pollinations.ai/prompt/${encodeURIComponent(item.visual_prompt || item.heading)}?width=200&height=200&nologo=true`} 
-                             alt={item.heading}
-                             className="rounded-lg w-24 h-24 object-cover"
+                           <StaggeredImage 
+                             prompt={item.visual_prompt || item.heading}
+                             width={200} height={200}
+                             className="rounded-lg w-24 h-24 object-cover shrink-0"
+                             index={i + 1}
                            />
                          </div>
                        </div>
