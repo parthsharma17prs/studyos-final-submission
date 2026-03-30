@@ -205,6 +205,7 @@ export default function AgentBooker() {
                 </div>
             </div>
         </div>
+        </div>
     </div>
   );
 }

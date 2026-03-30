@@ -45,10 +45,21 @@ export async function POST(req: Request) {
     const responseText = completion.choices[0]?.message?.content || '[]';
     // Handle cases where the model might wrap the array in an object
     let quizData = JSON.parse(responseText);
-    if (quizData.questions) {
+    // Standardize to array
+    if (quizData.questions && Array.isArray(quizData.questions)) {
       quizData = quizData.questions;
-    } else if (!Array.isArray(quizData) && Object.values(quizData).length === 1 && Array.isArray(Object.values(quizData)[0])) {
-        quizData = Object.values(quizData)[0];
+    } else if (quizData.quiz && Array.isArray(quizData.quiz)) {
+      quizData = quizData.quiz;
+    } else if (!Array.isArray(quizData)) {
+      // Look for any array property
+      const firstArray = Object.values(quizData).find(v => Array.isArray(v));
+      if (firstArray) quizData = firstArray;
+      else quizData = [quizData]; // Wrap if it's just one object
+    }
+    
+    // Ensure it's not empty
+    if (!Array.isArray(quizData) || quizData.length === 0) {
+      throw new Error("Quiz generation returned empty data");
     }
     
     return NextResponse.json(quizData);

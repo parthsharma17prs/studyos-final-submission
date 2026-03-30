@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -28,7 +29,7 @@ html {
 
   body {
     @apply bg-black text-white antialiased selection:bg-student-accent/30;
-    font-family: var(--font-inter), sans-serif;
+    font-family: 'Inter', sans-serif;
     background-image: radial-gradient(circle at 50% -20%, #1a1a1a 0%, #000000 100%);
   }
 }
