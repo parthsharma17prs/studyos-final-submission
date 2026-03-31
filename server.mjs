@@ -26,7 +26,7 @@ app.prepare().then(async () => {
   server.use(cors({ origin: true, credentials: true }));
   
   const testApiRouter = express.Router();
-  testApiRouter.use(express.json());
+  const jsonParser = express.json();
 
   // Dynamic import of test-module routes since they are ES modules
   const codeExecutionRoutes = (await import('./test-module/backend/routes/codeExecution.js')).default;
@@ -37,11 +37,11 @@ app.prepare().then(async () => {
   const { setupSocketHandlers } = await import('./test-module/backend/socket/handlers.js');
 
   testApiRouter.get('/health', (req, res) => res.json({status: 'ok'}));
-  testApiRouter.use('/code-execution', codeExecutionRoutes);
-  testApiRouter.use('/proctoring', proctoringRoutes);
-  testApiRouter.use('/quizzes', quizRoutes);
-  testApiRouter.use('/framework', frameworkRoutes);
-  testApiRouter.use('/telemetry', telemetryRoutes);
+  testApiRouter.use('/code-execution', jsonParser, codeExecutionRoutes);
+  testApiRouter.use('/proctoring', jsonParser, proctoringRoutes);
+  testApiRouter.use('/quizzes', jsonParser, quizRoutes);
+  testApiRouter.use('/framework', jsonParser, frameworkRoutes);
+  testApiRouter.use('/telemetry', jsonParser, telemetryRoutes);
 
   server.use('/api', testApiRouter);
 
