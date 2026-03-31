@@ -132,12 +132,12 @@ export default function MockTestPage() {
 
       <div className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto p-6 h-full">
         {activeTab === 'global' ? (
-          <div className="w-full h-[80vh] flex flex-col rounded-2xl overflow-hidden border border-os-border bg-black">
+          <div className="w-full h-full min-h-[80vh] flex flex-col rounded-2xl overflow-hidden border border-os-border bg-[#111]">
             <iframe 
-              src={`http://${typeof window !== "undefined" ? window.location.hostname : "localhost"}:5173`} 
+              src="http://localhost:5173" 
               className="w-full h-full flex-1 border-none"
               title="Mock Test"
-              allow="camera; microphone; fullscreen"
+              allow="camera; microphone; fullscreen; display-capture"
             />
           </div>
         ) : (
