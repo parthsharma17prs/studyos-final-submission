@@ -36,17 +36,26 @@ export async function POST(req: Request) {
     
     let quizData;
     try {
-        const start = responseText.indexOf('{');
-        const end = responseText.lastIndexOf('}');
-        if (start !== -1 && end !== -1) {
-            const cleanJSON = responseText.substring(start, end + 1);
-            quizData = JSON.parse(cleanJSON);
-        } else {
-            quizData = JSON.parse(responseText.replace(/```json/gi, '').replace(/```/g, '').trim());
-        }
+        let cleanOutput = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
+        quizData = JSON.parse(cleanOutput);
     } catch(e) {
-        console.error("Quiz Parse Error. Raw text:", responseText);
-        quizData = JSON.parse(responseText.replace(/[\u0000-\u001F]+/g,""));
+        let cleanOutput = responseText.replace(/[\u0000-\u001F]+/g,"");
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
+        try {
+            quizData = JSON.parse(cleanOutput);
+        } catch(innerE) {
+            console.error("Quiz Parse Error. Raw text:", responseText);
+            throw new Error("Failed to parse AI response as JSON.");
+        }
     }
     
     // Standardize to array

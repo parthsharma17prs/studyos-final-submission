@@ -114,21 +114,24 @@ export async function POST(req: Request) {
     
     let studyData;
     try {
-        const start = outputText.indexOf('{');
-        const end = outputText.lastIndexOf('}');
-        if (start !== -1 && end !== -1) {
-            const cleanJSON = outputText.substring(start, end + 1);
-            studyData = JSON.parse(cleanJSON);
-        } else {
-            studyData = JSON.parse(outputText.replace(/```json/gi, '').replace(/```/g, '').trim());
-        }
+        let cleanOutput = outputText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && cleanOutput.indexOf('[') < startIdx) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && cleanOutput.lastIndexOf(']') > endIdx) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
+        studyData = JSON.parse(cleanOutput);
     } catch (e) {
-        console.error("JSON Parse Error. Raw Output Text was:", outputText);
+        let cleanOutput = outputText.replace(/[\u0000-\u001F]+/g,"");
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && cleanOutput.indexOf('[') < startIdx) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && cleanOutput.lastIndexOf(']') > endIdx) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
         try {
-            const superClean = outputText.replace(/[\u0000-\u001F]+/g,"");
-            studyData = JSON.parse(superClean);
-        } catch (innerE) {
-            console.error("Super Clean Parse failed:", innerE);
+            studyData = JSON.parse(cleanOutput);
+        } catch(innerE) {
+            console.error("JSON Parse Error. Raw Output Text was:", outputText);
             throw new Error("Failed to parse AI response as JSON. See terminal logs.");
         }
     }

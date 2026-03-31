@@ -58,17 +58,26 @@ export async function POST(req: Request) {
     
     let parsedData;
     try {
-        const start = outputText.indexOf('{');
-        const end = outputText.lastIndexOf('}');
-        if (start !== -1 && end !== -1) {
-            const cleanJSON = outputText.substring(start, end + 1);
-            parsedData = JSON.parse(cleanJSON);
-        } else {
-            parsedData = JSON.parse(outputText.replace(/```json/gi, '').replace(/```/g, '').trim());
+        let cleanOutput = outputText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
+        parsedData = JSON.parse(cleanOutput);
+    } catch(e) {
+        let cleanOutput = outputText.replace(/[\u0000-\u001F]+/g,"");
+        let startIdx = cleanOutput.indexOf('{');
+        let endIdx = cleanOutput.lastIndexOf('}');
+        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
+        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
+        try {
+            parsedData = JSON.parse(cleanOutput);
+        } catch(innerE) {
+            console.error("Transform Parse Error. Raw text:", outputText);
+            throw new Error("Failed to parse AI response as JSON.");
         }
-    } catch {
-        console.error("Transform Parse Error. Raw text:", outputText);
-        parsedData = JSON.parse(outputText.replace(/[\u0000-\u001F]+/g,""));
     }
     
     return NextResponse.json(parsedData);
