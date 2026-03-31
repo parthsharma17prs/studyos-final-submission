@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { LuSwords, LuShield, LuZap, LuSearch, LuTrophy } from 'react-icons/lu';
-import ReactConfetti from 'react-confetti';
+import confetti from 'canvas-confetti';
 
 const MOCK_QUESTIONS = [
   { q: "What does HTML stand for?", options: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language"], ans: 0 },
@@ -72,6 +72,26 @@ export default function BattleMode() {
     return () => clearTimeout(timeout);
   }, [currentQIndex, matchState, userAnswered]);
 
+  const triggerConfetti = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+  };
+
   const handleAnswer = (optionIdx: number) => {
     if (userAnswered !== null) return;
     setUserAnswered(optionIdx);
@@ -79,29 +99,31 @@ export default function BattleMode() {
     const isCorrect = optionIdx === MOCK_QUESTIONS[currentQIndex].ans;
     const opponentCorrect = Math.random() > 0.4;
 
-    setScores(s => ({
-      you: isCorrect ? s.you + 10 : s.you,
-      opponent: opponentCorrect ? s.opponent + 10 : s.opponent
-    }));
-
-    setTimeout(() => {
-      if (currentQIndex < MOCK_QUESTIONS.length - 1) {
-        setUserAnswered(null);
-        setOpponentAnswered(false);
-        setCurrentQIndex(q => q + 1);
-      } else {
-        setMatchState('finished');
-      }
-    }, 2000);
+    setScores(s => {
+      const newState = {
+        you: isCorrect ? s.you + 10 : s.you,
+        opponent: opponentCorrect ? s.opponent + 10 : s.opponent
+      };
+      
+      setTimeout(() => {
+        if (currentQIndex < MOCK_QUESTIONS.length - 1) {
+          setUserAnswered(null);
+          setOpponentAnswered(false);
+          setCurrentQIndex(q => q + 1);
+        } else {
+          setMatchState('finished');
+          if (newState.you >= newState.opponent) {
+            triggerConfetti();
+          }
+        }
+      }, 2000);
+      
+      return newState;
+    });
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 text-center mt-12 px-4 pb-20">
-      {matchState === 'finished' && scores.you >= scores.opponent && (
-        <div className="fixed inset-0 z-[100] pointer-events-none">
-          <ReactConfetti width={windowSize.width} height={windowSize.height} />
-        </div>
-      )}
 
       <div>
         <h2 className="text-4xl font-black tracking-tighter mb-4 text-student-accent glow-text-red flex items-center justify-center gap-4">

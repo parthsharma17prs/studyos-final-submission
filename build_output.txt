@@ -1,0 +1,63 @@
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/40) ...
+   Generating static pages (10/40) 
+   Generating static pages (20/40) 
+   Generating static pages (30/40) 
+ ✓ Generating static pages (40/40)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    11.4 kB         115 kB
+├ ○ /_not-found                          875 B          88.3 kB
+├ ƒ /api/analyze-call                    0 B                0 B
+├ ƒ /api/analyze-resume                  0 B                0 B
+├ ƒ /api/analyze-scorecard               0 B                0 B
+├ ƒ /api/auth/login                      0 B                0 B
+├ ƒ /api/auth/signup                     0 B                0 B
+├ ƒ /api/detect-gaps                     0 B                0 B
+├ ƒ /api/gamma/create                    0 B                0 B
+├ ƒ /api/generate                        0 B                0 B
+├ ƒ /api/generate-adaptive               0 B                0 B
+├ ƒ /api/groq/chat                       0 B                0 B
+├ ƒ /api/groq/exam-practitioner          0 B                0 B
+├ ƒ /api/groq/quiz                       0 B                0 B
+├ ƒ /api/groq/schedule                   0 B                0 B
+├ ƒ /api/groq/summarize                  0 B                0 B
+├ ƒ /api/groq/transform                  0 B                0 B
+├ ƒ /api/mcp/add                         0 B                0 B
+├ ƒ /api/mcp/random                      0 B                0 B
+├ ƒ /api/saarthi/questions               0 B                0 B
+├ ƒ /api/trigger-call                    0 B                0 B
+├ ƒ /api/trigger-exam-coach              0 B                0 B
+├ ○ /auth                                3.18 kB         208 kB
+├ ○ /student/agent-booker                4.01 kB         209 kB
+├ ○ /student/ai-call                     79.5 kB         171 kB
+├ ○ /student/battle                      7.24 kB        98.3 kB
+├ ○ /student/dashboard                   2.57 kB         107 kB
+├ ○ /student/exam-practitioner           5.09 kB         210 kB
+├ ○ /student/gaps                        3.48 kB        94.6 kB
+├ ○ /student/interview                   2.79 kB        93.9 kB
+├ ○ /student/mcp                         1.19 kB        88.6 kB
+├ ○ /student/mock-test                   2.67 kB         204 kB
+├ ○ /student/predictor                   3.07 kB        94.2 kB
+├ ○ /student/resume                      3.96 kB        95.1 kB
+├ ○ /student/schedule                    5.12 kB         210 kB
+├ ○ /student/scorecard                   5.25 kB        96.4 kB
+├ ○ /student/settings                    2.82 kB        93.9 kB
+└ ○ /student/study                       9.1 kB          214 kB
++ First Load JS shared by all            87.4 kB
+  ├ chunks/117-baab43fc83142998.js       31.7 kB
+  ├ chunks/fd9d1056-87da80e0c187477b.js  53.7 kB
+  └ other shared chunks (total)          2.03 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
