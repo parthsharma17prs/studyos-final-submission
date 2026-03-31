@@ -7,7 +7,7 @@
     "dev:test-front": "cd test-module/frontend && npm run dev",
     "dev:test-back": "cd test-module/backend && PORT=5002 npm start",
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:test-front\" \"npm run dev:test-back\"",
-    "clean": "rm -rf .next && rm -rf node_modules/.cache",
+    "clean": "rm -rf .next node_modules/.cache || true",
     "build:test-front": "npm --prefix test-module/frontend install && npm --prefix test-module/frontend run build",
     "build": "npm run clean && npm run build:test-front && next build",
     "start": "node server.mjs",
