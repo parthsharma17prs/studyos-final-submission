@@ -3,6 +3,36 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
+function parseAIJSON(text: string) {
+  let clean = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+  try { return JSON.parse(clean); } catch(e) {}
+  
+  let objStart = clean.indexOf('{'); let objEnd = clean.lastIndexOf('}');
+  let arrStart = clean.indexOf('['); let arrEnd = clean.lastIndexOf(']');
+  let startIdx = objStart !== -1 ? objStart : arrStart;
+  let endIdx = objEnd !== -1 ? objEnd : arrEnd;
+  if (objStart !== -1 && arrStart !== -1) startIdx = Math.min(objStart, arrStart);
+  if (objEnd !== -1 && arrEnd !== -1) endIdx = Math.max(objEnd, arrEnd);
+  
+  if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
+    clean = clean.substring(startIdx, endIdx + 1);
+    try { return JSON.parse(clean); } catch(e) {}
+    let noNewlines = clean.replace(/\n/g, "\\n").replace(/\r/g, "");
+    try { return JSON.parse(noNewlines); } catch(e) {}
+    let superClean = clean.replace(/[\u0000-\u001F]+/g, "");
+    try { return JSON.parse(superClean); } catch (e) {}
+    let noTrailing = superClean.replace(/,(?=\s*[}\]])/g, "");
+    try { return JSON.parse(noTrailing); } catch(e) {}
+    let openBraces = (noTrailing.match(/\{/g) || []).length;
+    let closeBraces = (noTrailing.match(/\}/g) || []).length;
+    let openBrackets = (noTrailing.match(/\[/g) || []).length;
+    let closeBrackets = (noTrailing.match(/\]/g) || []).length;
+    let autoClose = noTrailing + '}'.repeat(Math.max(0, openBraces - closeBraces)) + ']'.repeat(Math.max(0, openBrackets - closeBrackets));
+    try { return JSON.parse(autoClose); } catch(e) {}
+  }
+  throw new Error("Unable to parse AI response");
+}
+
 export async function POST(req: Request) {
   try {
     const { format, summaryData } = await req.json();
@@ -58,26 +88,10 @@ export async function POST(req: Request) {
     
     let parsedData;
     try {
-        let cleanOutput = outputText.replace(/```json/gi, '').replace(/```/g, '').trim();
-        let startIdx = cleanOutput.indexOf('{');
-        let endIdx = cleanOutput.lastIndexOf('}');
-        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
-        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
-        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
-        parsedData = JSON.parse(cleanOutput);
+        parsedData = parseAIJSON(outputText);
     } catch(e) {
-        let cleanOutput = outputText.replace(/[\u0000-\u001F]+/g,"");
-        let startIdx = cleanOutput.indexOf('{');
-        let endIdx = cleanOutput.lastIndexOf('}');
-        if (cleanOutput.indexOf('[') !== -1 && (startIdx === -1 || cleanOutput.indexOf('[') < startIdx)) startIdx = cleanOutput.indexOf('[');
-        if (cleanOutput.lastIndexOf(']') !== -1 && (endIdx === -1 || cleanOutput.lastIndexOf(']') > endIdx)) endIdx = cleanOutput.lastIndexOf(']');
-        if (startIdx !== -1 && endIdx !== -1) cleanOutput = cleanOutput.substring(startIdx, endIdx + 1);
-        try {
-            parsedData = JSON.parse(cleanOutput);
-        } catch(innerE) {
-            console.error("Transform Parse Error. Raw text:", outputText);
-            throw new Error("Failed to parse AI response as JSON.");
-        }
+        console.error("Transform Parse Error. Raw text:", outputText);
+        throw new Error("Failed to parse AI response as JSON.");
     }
     
     return NextResponse.json(parsedData);
