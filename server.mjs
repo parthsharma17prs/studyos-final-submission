@@ -28,13 +28,13 @@ app.prepare().then(async () => {
   const testApiRouter = express.Router();
   testApiRouter.use(express.json());
 
-  // Dynamic import of testlframe routes since they are ES modules
-  const codeExecutionRoutes = (await import('./testlframe/backend/routes/codeExecution.js')).default;
-  const proctoringRoutes = (await import('./testlframe/backend/routes/proctoring.js')).default;
-  const quizRoutes = (await import('./testlframe/backend/routes/quiz.js')).default;
-  const frameworkRoutes = (await import('./testlframe/backend/routes/framework.js')).default;
-  const telemetryRoutes = (await import('./testlframe/backend/routes/telemetry.js')).default;
-  const { setupSocketHandlers } = await import('./testlframe/backend/socket/handlers.js');
+  // Dynamic import of test-module routes since they are ES modules
+  const codeExecutionRoutes = (await import('./test-module/backend/routes/codeExecution.js')).default;
+  const proctoringRoutes = (await import('./test-module/backend/routes/proctoring.js')).default;
+  const quizRoutes = (await import('./test-module/backend/routes/quiz.js')).default;
+  const frameworkRoutes = (await import('./test-module/backend/routes/framework.js')).default;
+  const telemetryRoutes = (await import('./test-module/backend/routes/telemetry.js')).default;
+  const { setupSocketHandlers } = await import('./test-module/backend/socket/handlers.js');
 
   testApiRouter.get('/health', (req, res) => res.json({status: 'ok'}));
   testApiRouter.use('/code-execution', codeExecutionRoutes);
@@ -46,7 +46,7 @@ app.prepare().then(async () => {
   server.use('/api', testApiRouter);
 
   // Serve TestLFrame Frontend (Vite Build)
-  const staticPath = path.join(__dirname, 'testlframe/frontend/dist');
+  const staticPath = path.join(__dirname, 'test-module/frontend/dist');
   server.use('/global-exam', express.static(staticPath));
   server.get('/global-exam', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));

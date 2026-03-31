@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev:next": "next dev -p 3001",
-    "dev:test-front": "cd testlframe/frontend && npm run dev",
-    "dev:test-back": "cd testlframe/backend && PORT=5002 npm start",
+    "dev:test-front": "cd test-module/frontend && npm run dev",
+    "dev:test-back": "cd test-module/backend && PORT=5002 npm start",
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:test-front\" \"npm run dev:test-back\"",
-    "build:test-front": "npm --prefix testlframe/frontend install && npm --prefix testlframe/frontend run build",
+    "build:test-front": "npm --prefix test-module/frontend install && npm --prefix test-module/frontend run build",
     "build": "npm run build:test-front && next build",
     "start": "node server.mjs",
     "lint": "next lint"
